@@ -613,7 +613,9 @@ def _try_adbkeyboard_input(text: str, env: env_interface.AndroidEnvInterface) ->
       return False
     
     # Handle newline at the end
-    formatted = text[:-1] if text.endswith("\n") else text
+    formatted = text[:]
+    while formatted.endswith("\n"):
+      formatted = formatted[:-1]
     enter_after = text.endswith("\n")
     
     print(formatted)
