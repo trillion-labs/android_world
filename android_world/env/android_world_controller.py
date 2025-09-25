@@ -226,9 +226,11 @@ class AndroidWorldController(base_wrapper.BaseWrapper):
 
   def get_ui_elements(self) -> list[representation_utils.UIElement]:
     """Returns the most recent UI elements from the device."""
+    screen_size = self.device_screen_size
     if self._a11y_method == A11yMethod.A11Y_FORWARDER_APP:
       return representation_utils.forest_to_ui_elements(
           self.get_a11y_forest(),
+          screen_size=screen_size,
           exclude_invisible_elements=True,
       )
     elif self._a11y_method == A11yMethod.UIAUTOMATOR:
@@ -244,6 +246,7 @@ class AndroidWorldController(base_wrapper.BaseWrapper):
       forest = self.get_a11y_forest()
       ui_elements = representation_utils.forest_to_ui_elements(
           forest,
+          screen_size=self.device_screen_size,
           exclude_invisible_elements=True,
       )
     else:

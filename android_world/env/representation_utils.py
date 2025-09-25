@@ -132,11 +132,11 @@ def _normalize_bounding_box(
       node_bbox.y_max / height,
   )
 
-
 def forest_to_ui_elements(
     forest: android_accessibility_forest_pb2.AndroidAccessibilityForest | Any,
     exclude_invisible_elements: bool = False,
     screen_size: Optional[tuple[int, int]] = None,
+    buffer_size: int = 12,
 ) -> list[UIElement]:
   """Extracts nodes from accessibility forest and converts to UI elements.
 
@@ -153,10 +153,29 @@ def forest_to_ui_elements(
     The extracted UI elements.
   """
   elements = []
+  window_count =0
   for window in forest.windows:
+    window_count += 1
     for node in window.tree.nodes:
-      if not node.child_ids or node.content_description or node.is_scrollable:
-        if exclude_invisible_elements and not node.is_visible_to_user:
+      if  node.content_description or node.is_scrollable or node.is_editable or node.text:
+        bounds = node.bounds_in_screen
+        screen_width, screen_height = screen_size
+        screen_width += buffer_size
+        screen_height += buffer_size
+        # import pdb; pdb.set_trace()
+        left = bounds.left if bounds.left else 0
+        right = bounds.right if bounds.right else screen_width
+        top = bounds.top if bounds.top else 0
+        bottom = bounds.bottom if bounds.bottom else screen_height
+
+        # if negative is included, return False
+        if left < 0 or right < 0 or top < 0 or bottom < 0:
+          continue
+        # if invalid bounds, return False
+        elif left > right or top > bottom:
+          continue
+        # if out of screen, return False
+        elif left < 0 or right > screen_width or top < 0 or bottom > screen_height:
           continue
         else:
           elements.append(accessibility_node_to_ui_element(node, screen_size))

@@ -614,11 +614,13 @@ def _try_adbkeyboard_input(text: str, env: env_interface.AndroidEnvInterface) ->
     
     # Handle newline at the end
     formatted = text[:]
-    while formatted.endswith("\n"):
-      formatted = formatted[:-1]
+    while formatted.endswith("\n") or formatted.endswith("\\n"):
+      if formatted.endswith("\\n"):
+        formatted = formatted[:-2]
+      else: 
+        formatted = formatted[:-1]
     enter_after = text.endswith("\n")
     
-    print(formatted)
     # Send text via broadcast using env.execute_adb_call
     input_args = [
         "shell", "am", "broadcast",
