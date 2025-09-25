@@ -581,6 +581,7 @@ def _ensure_adb_keyboard_ready() -> bool:
 
 
 def _try_adbkeyboard_input(text: str, env: env_interface.AndroidEnvInterface) -> bool:
+  # import pdb; pdb.set_trace()
   """Try to send text using ADBKeyboard via Android env. Returns True if successful."""
   if not _ensure_adb_keyboard_ready():
     return False
@@ -606,6 +607,7 @@ def _try_adbkeyboard_input(text: str, env: env_interface.AndroidEnvInterface) ->
             timeout_sec=5.0,
         )
     )
+    print(clear_response)
     
     if clear_response.status != adb_pb2.AdbResponse.Status.OK:
       return False
@@ -614,12 +616,13 @@ def _try_adbkeyboard_input(text: str, env: env_interface.AndroidEnvInterface) ->
     formatted = text[:-1] if text.endswith("\n") else text
     enter_after = text.endswith("\n")
     
+    print(formatted)
     # Send text via broadcast using env.execute_adb_call
     input_args = [
         "shell", "am", "broadcast",
         # "-n", "com.android.adbkeyboard/.AdbIME",
         "-a", "ADB_INPUT_TEXT",
-        "--es", "msg", formatted
+        "--es", "msg", f"'{formatted}'"
     ]
     input_response = env.execute_adb_call(
         adb_pb2.AdbRequest(
@@ -672,6 +675,7 @@ def type_text(
       this should be longer as it takes longer to type.
   """
   # Try ADBKeyboard first for better Unicode/Korean support
+  
   if _try_adbkeyboard_input(text, env):
     return
   
